@@ -234,6 +234,9 @@ export class Function extends cloud.Function implements IAwsFunction {
         : Duration.fromMinutes(1).seconds,
       memorySize: props.memory ?? DEFAULT_MEMORY_SIZE,
       architectures: ["arm64"],
+      loggingConfig: {
+        logFormat: "JSON",
+      },
     });
 
     if (
