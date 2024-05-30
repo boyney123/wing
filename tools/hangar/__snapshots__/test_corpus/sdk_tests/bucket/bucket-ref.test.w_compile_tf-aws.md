@@ -320,6 +320,9 @@
         },
         "function_name": "Handler-c85d8af5",
         "handler": "index.handler",
+        "logging_config": {
+          "log_format": "JSON"
+        },
         "memory_size": 1024,
         "publish": true,
         "role": "${aws_iam_role.BucketRef_AwsConsoleField_Handler_IamRole_BF718408.arn}",
@@ -352,6 +355,9 @@
         },
         "function_name": "Handler-c85e098f",
         "handler": "index.handler",
+        "logging_config": {
+          "log_format": "JSON"
+        },
         "memory_size": 1024,
         "publish": true,
         "role": "${aws_iam_role.BucketRef_BucketArnField_Handler_IamRole_DF52E4B1.arn}",
@@ -384,6 +390,9 @@
         },
         "function_name": "Handler-c885f795",
         "handler": "index.handler",
+        "logging_config": {
+          "log_format": "JSON"
+        },
         "memory_size": 1024,
         "publish": true,
         "role": "${aws_iam_role.BucketRef_BucketNameField_Handler_IamRole_4C746299.arn}",
@@ -416,6 +425,9 @@
         },
         "function_name": "delete-c8d8aa8e",
         "handler": "index.handler",
+        "logging_config": {
+          "log_format": "JSON"
+        },
         "memory_size": 1024,
         "publish": true,
         "role": "${aws_iam_role.BucketRef_FileBrowser_delete_IamRole_A66062FE.arn}",
@@ -448,6 +460,9 @@
         },
         "function_name": "get-c8ba1e5f",
         "handler": "index.handler",
+        "logging_config": {
+          "log_format": "JSON"
+        },
         "memory_size": 1024,
         "publish": true,
         "role": "${aws_iam_role.BucketRef_FileBrowser_get_IamRole_8E0DB684.arn}",
@@ -480,6 +495,9 @@
         },
         "function_name": "list-c88fd67a",
         "handler": "index.handler",
+        "logging_config": {
+          "log_format": "JSON"
+        },
         "memory_size": 1024,
         "publish": true,
         "role": "${aws_iam_role.BucketRef_FileBrowser_list_IamRole_DC0C9222.arn}",
@@ -512,6 +530,9 @@
         },
         "function_name": "put-c8cdb51a",
         "handler": "index.handler",
+        "logging_config": {
+          "log_format": "JSON"
+        },
         "memory_size": 1024,
         "publish": true,
         "role": "${aws_iam_role.BucketRef_FileBrowser_put_IamRole_9C4230CD.arn}",

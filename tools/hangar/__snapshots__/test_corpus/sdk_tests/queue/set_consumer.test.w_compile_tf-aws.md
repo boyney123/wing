@@ -260,6 +260,9 @@
         },
         "function_name": "Queue-SetConsumer0-c83c303c",
         "handler": "index.handler",
+        "logging_config": {
+          "log_format": "JSON"
+        },
         "memory_size": 1024,
         "publish": true,
         "role": "${aws_iam_role.Queue-SetConsumer0_IamRole_7F9ED9ED.arn}",
@@ -293,6 +296,9 @@
         },
         "function_name": "q2-SetConsumer0-c8ba098b",
         "handler": "index.handler",
+        "logging_config": {
+          "log_format": "JSON"
+        },
         "memory_size": 1024,
         "publish": true,
         "role": "${aws_iam_role.q2-SetConsumer0_IamRole_910A96B5.arn}",
@@ -325,6 +331,9 @@
         },
         "function_name": "q3-SetConsumer0-c8cd013e",
         "handler": "index.handler",
+        "logging_config": {
+          "log_format": "JSON"
+        },
         "memory_size": 1024,
         "publish": true,
         "role": "${aws_iam_role.q3-SetConsumer0_IamRole_2934E47C.arn}",

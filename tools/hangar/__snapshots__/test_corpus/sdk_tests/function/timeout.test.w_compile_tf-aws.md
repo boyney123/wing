@@ -143,6 +143,9 @@
         },
         "function_name": "function-with-1s-timeout-c8d47946",
         "handler": "index.handler",
+        "logging_config": {
+          "log_format": "JSON"
+        },
         "memory_size": 1024,
         "publish": true,
         "role": "${aws_iam_role.functionwith1stimeout_IamRole_C2456C80.arn}",
@@ -175,6 +178,9 @@
         },
         "function_name": "function-with-default-timeout-c8c15878",
         "handler": "index.handler",
+        "logging_config": {
+          "log_format": "JSON"
+        },
         "memory_size": 1024,
         "publish": true,
         "role": "${aws_iam_role.functionwithdefaulttimeout_IamRole_E358F68D.arn}",
