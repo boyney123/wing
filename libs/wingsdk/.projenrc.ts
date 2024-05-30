@@ -2,12 +2,12 @@ import { JsonFile, cdk, javascript, DependencyType } from "projen";
 
 const JSII_DEPS = ["constructs@^10.3"];
 const CDKTF_VERSION = "0.20.3";
-const AWS_SDK_VERSION = "3.490.0";
+const AWS_SDK_VERSION = "3.577.0";
 
 const CDKTF_PROVIDERS = [
   "aws@~>5.51.1",
   "random@~>3.5.1",
-  "azurerm@~>3.54.0",
+  "azurerm@~>3.96.0",
   "google@~>5.10.0",
 ];
 
@@ -43,6 +43,7 @@ const project = new cdk.JsiiProject({
     ...sideLoad,
     // preflight dependencies
     "safe-stable-stringify",
+    "jiti",
     // aws sdk client dependencies
     // change `AWS_SDK_VERSION` to update all deps at once
     "@aws-sdk/client-cloudwatch-logs",
@@ -80,16 +81,18 @@ const project = new cdk.JsiiProject({
     "cron-parser",
     // shared client dependencies
     "ioredis",
-    "jsonschema",
     "ajv",
+    "cron-validator",
     // fs module dependency
     "yaml",
     "toml",
     // enhanced diagnostics
     "stacktracey",
     "ulid",
+    "vlq",
     // tunnels
     "@winglang/wingtunnels@workspace:^",
+    "glob",
   ],
   devDeps: [
     `@cdktf/provider-aws@^19`, // only for testing Wing plugins
@@ -100,6 +103,7 @@ const project = new cdk.JsiiProject({
     "@types/mime-types",
     "mock-gcs@^1.2.0",
     "@types/express",
+    "@types/glob",
     "aws-sdk-client-mock@3.0.0",
     "aws-sdk-client-mock-jest@3.0.0",
     `cdktf-cli@${CDKTF_VERSION}`,
@@ -159,6 +163,18 @@ project.eslint!.addOverride({
   files: ["src/**/index.ts"],
   rules: {
     "sort-exports/sort-exports": ["error", { sortDir: "asc" }],
+  },
+});
+
+project.eslint!.addOverride({
+  files: ["vitest.config.mts"],
+  rules: {
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        devDependencies: true,
+      },
+    ],
   },
 });
 

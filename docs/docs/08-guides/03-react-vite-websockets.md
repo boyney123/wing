@@ -13,13 +13,44 @@ Our application will have a counter that can be incremented by clicking on it. T
 synchronized in real-time across all users via a distributed cloud counter and WebSockets.
 
 > 🚧 Wing is still under active development, so don't be (too) surprised if you run into issues or bugs
-> along the way. You are invited to [join the Wing Slack](https://t.winglang.io/slack) to say hi, ask questions
+> along the way. You are invited to [join the Wing Discord](https://t.winglang.io/discord) to say hi, ask questions
 > and help your fellow Wingnuts.
 
 ## How to use this guide?
 
 This guide is written as a tutorial and intended to be followed step-by-step. At the end of each step, you should be able to find the 
 full source code in a collapsable section.
+
+To expedite the project creation process, consider leveraging the react-vite quickstart template. This quickstart option automates the generation of all the files demonstrated in this tutorial, providing a fast way to set up your project environment:
+
+```bash
+$ mkdir my-react-vite
+$ cd my-react-vite
+$ wing new react-vite
+```
+
+Let's check out what we now have in our project directory:
+
+```bash
+my-react-vite/
+├── backend
+├── frontned
+├── package-lock.json
+├── package.json
+```
+
+During this tutorial, we'll be focusing on editing the following files:
+
+```bash
+backend/
+├── main.w
+├── broadcaster.w
+```
+
+```bash
+frontend/
+├── src/App.tsx
+```
 
 You can also find the entire project in [GitHub](https://github.com/winglang/guide-react-vite-websockets).
 

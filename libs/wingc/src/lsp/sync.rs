@@ -120,7 +120,7 @@ pub fn on_document_did_change(params: DidChangeTextDocumentParams) {
 fn partial_compile(
 	source_path: &Path,
 	source_text: String,
-	mut types: &mut Types, // TODO: does this need to be shared between recompiles?
+	mut types: &mut Types,
 	jsii_types: &mut TypeSystem,
 	project_data: &mut ProjectData,
 ) {
@@ -150,11 +150,10 @@ fn partial_compile(
 	}
 
 	// Reset all type information
-	types.reset_expr_types();
-	types.reset_scope_envs();
+	*types = Types::new();
+	project_data.jsii_imports.clear();
 
 	// -- TYPECHECKING PHASE --
-	let mut jsii_imports = vec![];
 
 	// Type check all files in topological order (start with files that don't require any other
 	// Wing files, then move on to files that depend on those, etc.)
@@ -166,7 +165,7 @@ fn partial_compile(
 			&file,
 			&project_data.file_graph,
 			jsii_types,
-			&mut jsii_imports,
+			&mut project_data.jsii_imports,
 		);
 
 		// Make sure all type reference are no longer considered references
@@ -210,6 +209,7 @@ pub fn check_utf8(path: PathBuf) -> Utf8PathBuf {
 
 #[cfg(test)]
 pub mod test_utils {
+	use regex::Regex;
 	use std::{fs, str::FromStr};
 	use uuid::Uuid;
 
@@ -287,24 +287,27 @@ pub mod test_utils {
 	/// Finds all ranges in the document starting with `//-`
 	pub fn get_ranges(content: &str) -> Vec<Range> {
 		let lines = content.lines();
+		let regex = Regex::new(r"\/\/[-^]+").unwrap();
 
 		let mut ranges = vec![];
 		for line in lines.enumerate() {
 			if line.1.contains("//-") {
-				let start_col = line.1.match_indices("//-").next().unwrap().0 + 2;
-				let end_col = line.1.len();
-				let line_num = line.0 - 1;
+				for i in regex.find_iter(line.1) {
+					let start_col = i.start() + 2;
+					let end_col = i.end();
+					let line_num = line.0 - 1;
 
-				ranges.push(Range {
-					start: Position {
-						line: line_num as u32,
-						character: start_col as u32,
-					},
-					end: Position {
-						line: line_num as u32,
-						character: end_col as u32,
-					},
-				});
+					ranges.push(Range {
+						start: Position {
+							line: line_num as u32,
+							character: start_col as u32,
+						},
+						end: Position {
+							line: line_num as u32,
+							character: end_col as u32,
+						},
+					});
+				}
 			}
 		}
 
