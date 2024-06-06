@@ -7,7 +7,8 @@ import {
   getResourceIconComponent,
   useTheme,
 } from "@wingconsole/design-system";
-import type { ConstructTreeNode } from "@winglang/sdk/lib/core/index.js";
+import type { MapItem } from "@wingconsole/server";
+import type { ResourceRunningState } from "@winglang/sdk/lib/simulator/index.js";
 import clsx from "classnames";
 import { type ElkPoint, type LayoutOptions } from "elkjs";
 import type { FunctionComponent, PropsWithChildren } from "react";
@@ -106,6 +107,31 @@ const Wrapper: FunctionComponent<PropsWithChildren<WrapperProps>> = memo(
   },
 );
 
+interface RunningStateIndicatorProps {
+  runningState: ResourceRunningState | undefined;
+}
+
+const RunningStateIndicator: FunctionComponent<RunningStateIndicatorProps> = ({
+  runningState,
+}) => {
+  if (runningState === "error") {
+    return <div className="size-2 rounded-full bg-red-500"></div>;
+  }
+  if (runningState === "starting") {
+    return (
+      <div className="relative">
+        <div className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gray-400 opacity-75"></div>
+        <div className="size-2 rounded-full bg-gray-400"></div>
+      </div>
+    );
+  }
+  if (runningState === "started") {
+    return <div className="size-2 rounded-full bg-green-500"></div>;
+  }
+  // return <div className="size-2 rounded-full bg-gray-400"></div>;
+  return <div className="size-2 rounded-full"></div>;
+};
+
 interface ContainerNodeProps {
   id: string;
   name: string;
@@ -165,6 +191,7 @@ interface ConstructNodeProps {
   onSelectedNodeIdChange: (id: string | undefined) => void;
   color?: string;
   icon?: string;
+  runningState?: ResourceRunningState | undefined;
 }
 
 const ConstructNode: FunctionComponent<PropsWithChildren<ConstructNodeProps>> =
@@ -180,6 +207,7 @@ const ConstructNode: FunctionComponent<PropsWithChildren<ConstructNodeProps>> =
       hasChildNodes,
       color,
       icon,
+      runningState,
     }) => {
       const select = useCallback(
         () => onSelectedNodeIdChange(id),
@@ -268,6 +296,14 @@ const ConstructNode: FunctionComponent<PropsWithChildren<ConstructNodeProps>> =
                 >
                   {name}
                 </span>
+
+                {/* <span className="text-slate-600 dark:text-slate-300">
+                  {status}
+                </span> */}
+
+                <div className="grow"></div>
+
+                <RunningStateIndicator runningState={runningState} />
               </div>
             )}
 
@@ -575,7 +611,7 @@ export const MapView = memo(
 
     const RenderNode = useCallback<
       FunctionComponent<{
-        constructTreeNode: ConstructTreeNode;
+        constructTreeNode: MapItem;
         selectedNodeId: string | undefined;
         onSelectedNodeIdChange: (id: string | undefined) => void;
       }>
@@ -615,6 +651,7 @@ export const MapView = memo(
             onSelectedNodeIdChange={props.onSelectedNodeIdChange}
             highlight={props.selectedNodeId === props.constructTreeNode.path}
             hasChildNodes={childNodes.length > 0}
+            runningState={props.constructTreeNode.status}
           >
             {childNodes.map((child) => (
               <RenderNode

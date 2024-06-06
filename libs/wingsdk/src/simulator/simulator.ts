@@ -17,6 +17,15 @@ import { PolicySchema } from "../target-sim/schema-resources";
 
 const LOCALHOST_ADDRESS = "127.0.0.1";
 const HANDLE_ATTRIBUTE = "handle";
+const RUNNING_STATE_ATTRIBUTE = "status";
+
+// export enum ConstructStatus {
+//   STARTING = "STARTING",
+//   ERROR = "ERROR",
+//   STOPPING = "STOPPING",
+//   STARTED = "STARTED",
+//   STOPPED = "STOPPED",
+// }
 
 /**
  * If an API call is made to a resource with name as the caller, any permissions
@@ -48,25 +57,6 @@ export interface SimulatorProps {
    */
   readonly factory?: ISimulatorFactory;
 }
-
-/**
- * A collection of callbacks that are invoked at key lifecycle events of the
- * simulator.
- */
-export interface ISimulatorLifecycleHooks {
-  /**
-   * A function to run whenever a trace is emitted.
-   */
-  onTrace?(event: Trace): void;
-}
-
-// Since we are using JSII we cannot use generics to type this right now:
-//
-// export interface WithTraceProps<T> {
-//   readonly activity: () => Promise<T>;
-// }
-// ...
-// withTrace(event: WithTraceProps<T>): Promise<T>;
 
 /**
  * Props for `ISimulatorContext.withTrace`.
@@ -159,6 +149,15 @@ export interface ITraceSubscriber {
   callback(event: Trace): void;
 }
 
+export interface ResourceLifecycleEvent {
+  readonly path: string;
+  readonly runningState: ResourceRunningState;
+}
+
+export interface IResourceLifecycleSubscriber {
+  callback(event: ResourceLifecycleEvent): void;
+}
+
 /**
  * The simulator can transition between these states:
  * ┌─────────┐    ┌─────────┐
@@ -171,6 +170,13 @@ export interface ITraceSubscriber {
  * └─────────┘    └─────────┘
  */
 type RunningState = "starting" | "running" | "stopping" | "stopped";
+
+export type ResourceRunningState =
+  | "starting"
+  | "started"
+  | "stopping"
+  | "stopped"
+  | "error";
 
 interface Model {
   simdir: string;
@@ -198,6 +204,7 @@ export class Simulator {
   private readonly _handles: HandleManager;
   private _traces: Array<Trace>;
   private readonly _traceSubscribers: Array<ITraceSubscriber>;
+  private readonly _resourceLifecyleSubscribers: Array<IResourceLifecycleSubscriber>;
   private _serverUrl: string | undefined;
   private _server: Server | undefined;
   private _model: Model;
@@ -217,6 +224,7 @@ export class Simulator {
     this._policyRegistry = new PolicyRegistry();
     this._traces = new Array();
     this._traceSubscribers = new Array();
+    this._resourceLifecyleSubscribers = new Array();
   }
 
   private _loadApp(simdir: string): Model {
@@ -392,6 +400,20 @@ export class Simulator {
     return path in this.state;
   }
 
+  private setResourceRunningState(
+    path: string,
+    runningState: ResourceRunningState
+  ) {
+    this.state[path].attrs = {
+      ...this.state[path].attrs,
+      [RUNNING_STATE_ATTRIBUTE]: runningState,
+    };
+
+    for (const subscriber of this._resourceLifecyleSubscribers) {
+      subscriber.callback({ path, runningState });
+    }
+  }
+
   private async stopResource(path: string) {
     if (!this.isStarted(path)) {
       return; // resource is already stopped
@@ -409,6 +431,8 @@ export class Simulator {
       );
     }
 
+    this.setResourceRunningState(path, "stopping");
+
     try {
       const resource = this._handles.find(handle);
       await this.ensureStateDirExists(path);
@@ -421,6 +445,8 @@ export class Simulator {
 
     // remove the resource's policy from the policy registry
     this._policyRegistry.deregister(path);
+
+    this.setResourceRunningState(path, "stopped");
 
     this.addSimulatorTrace(
       path,
@@ -609,6 +635,10 @@ export class Simulator {
    */
   public onTrace(subscriber: ITraceSubscriber) {
     this._traceSubscribers.push(subscriber);
+  }
+
+  public onResourceLifecycleEvent(subscriber: IResourceLifecycleSubscriber) {
+    this._resourceLifecyleSubscribers.push(subscriber);
   }
 
   /**
@@ -843,6 +873,7 @@ export class Simulator {
       attrs: {},
       policy: resolvedPolicy,
     };
+    this.setResourceRunningState(path, "starting");
 
     // create the resource based on its type
     // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -867,7 +898,17 @@ export class Simulator {
 
     // initialize the resource with the simulator context
     const context = this.createContext(resourceConfig, handle);
-    const attrs = await resourceObject.init(context);
+    let initError: any;
+    try {
+      const attrs = await resourceObject.init(context);
+
+      this.state[path].attrs = {
+        ...this.state[path].attrs,
+        ...attrs,
+      };
+    } catch (error: any) {
+      initError = error;
+    }
 
     // save the current state
     await resourceObject.save();
@@ -875,17 +916,18 @@ export class Simulator {
     // merge the attributes
     this.state[path].attrs = {
       ...this.state[path].attrs,
-      ...attrs,
       [HANDLE_ATTRIBUTE]: handle,
     };
+    this.setResourceRunningState(path, initError ? "error" : "started");
 
-    // trace the resource creation
     this.addSimulatorTrace(
       path,
       {
-        message: `${resourceConfig.path} started`,
+        message: initError
+          ? `${resourceConfig.path} failed to start: ${initError}`
+          : `${resourceConfig.path} started`,
       },
-      LogLevel.VERBOSE
+      initError ? LogLevel.ERROR : LogLevel.VERBOSE
     );
   }
 
@@ -1253,12 +1295,6 @@ export interface BaseResourceSchema extends ToSimulatorOutput {
   readonly attrs: Record<string, any>;
   /** Resources that should be deployed before this resource. */
   readonly deps?: string[];
-}
-
-/** Schema for resource attributes */
-export interface BaseResourceAttributes {
-  /** The resource's simulator-unique id. */
-  readonly [HANDLE_ATTRIBUTE]: string;
 }
 
 /** A policy statement that defines a permission for a resource. */

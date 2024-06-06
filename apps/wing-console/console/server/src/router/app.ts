@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { observable } from "@trpc/server/observable";
+import type { ResourceRunningState } from "@winglang/sdk/lib/simulator/simulator.js";
 import uniqby from "lodash.uniqby";
 import { z } from "zod";
 
@@ -14,7 +15,11 @@ import type {
 import { buildConstructTreeNodeMap } from "../utils/constructTreeNodeMap.js";
 import type { FileLink } from "../utils/createRouter.js";
 import { createProcedure, createRouter } from "../utils/createRouter.js";
-import type { IFunctionClient, Simulator } from "../wingsdk.js";
+import type {
+  BaseResourceSchema,
+  IFunctionClient,
+  Simulator,
+} from "../wingsdk.js";
 
 const isTest = /(\/test$|\/test:([^/\\])+$)/;
 const isTestHandler = /(\/test$|\/test:.*\/Handler$)/;
@@ -29,6 +34,11 @@ export interface ExplorerItem {
   type?: string;
   childItems?: ExplorerItem[];
   display?: NodeDisplay;
+}
+
+export interface MapItem extends ConstructTreeNode {
+  status?: ResourceRunningState | undefined;
+  children?: Record<string, MapItem>;
 }
 
 const shakeTree = (tree: ConstructTreeNode): ConstructTreeNode => {
@@ -359,8 +369,24 @@ export const createAppRouter = () => {
       const { tree } = simulator.tree().rawData();
       const connections = simulator.connections();
 
+      const enrichTreeNode = (node: ConstructTreeNode): MapItem => {
+        const children: Record<string, MapItem> | undefined = node.children
+          ? {}
+          : undefined;
+        if (children) {
+          for (const [childId, child] of Object.entries(node.children ?? {})) {
+            children[childId] = enrichTreeNode(child);
+          }
+        }
+        return {
+          ...node,
+          status: simulator.tryGetResourceConfig(node.path)?.attrs?.status,
+          children,
+        } as MapItem;
+      };
+
       return {
-        tree,
+        tree: enrichTreeNode(tree),
         connections,
       };
     }),
@@ -489,50 +515,6 @@ function createExplorerItemFromConstructTreeNode(
               showTests,
               includeHiddens,
             ),
-          )
-      : undefined,
-  };
-}
-
-export interface MapNode {
-  id: string;
-  data: {
-    label?: string;
-    type?: string;
-    path?: string;
-    display?: NodeDisplay;
-  };
-  children?: MapNode[];
-}
-
-function createMapNodeFromConstructTreeNode(
-  node: ConstructTreeNode,
-  simulator: Simulator,
-  showTests = false,
-): MapNode {
-  return {
-    id: node.path,
-    data: {
-      label: node.id,
-      type: getResourceType(node, simulator),
-      path: node.path,
-      display: node.display,
-    },
-    children: node.children
-      ? Object.values(node.children)
-          .filter((node) => {
-            if (node.display?.hidden) {
-              return false;
-            }
-
-            if (!showTests && matchTest(node.path)) {
-              return false;
-            }
-
-            return true;
-          })
-          .map((node) =>
-            createMapNodeFromConstructTreeNode(node, simulator, showTests),
           )
       : undefined,
   };
