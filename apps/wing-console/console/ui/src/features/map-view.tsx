@@ -416,7 +416,7 @@ const ConstructNode: FunctionComponent<PropsWithChildren<ConstructNodeProps>> =
                             "font-mono",
                           )}
                         >
-                          <span>{inflight.name}()</span>
+                          <span>{inflight.name}</span>
                         </div>
                       </div>
 
