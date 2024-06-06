@@ -149,12 +149,29 @@ export interface ITraceSubscriber {
   callback(event: Trace): void;
 }
 
+/**
+ * Represents a resource lifecycle event.
+ */
 export interface ResourceLifecycleEvent {
+  /**
+   * The path of the resource that changed.
+   */
   readonly path: string;
+
+  /**
+   * The current running state of the resource.
+   */
   readonly runningState: ResourceRunningState;
 }
 
+/**
+ * A subscriber that can listen for resource lifecycle events emitted by the
+ * simulator.
+ */
 export interface IResourceLifecycleSubscriber {
+  /**
+   * Called when a resource lifecycle event is emitted.
+   */
   callback(event: ResourceLifecycleEvent): void;
 }
 
@@ -637,6 +654,10 @@ export class Simulator {
     this._traceSubscribers.push(subscriber);
   }
 
+  /**
+   * Register a subscriber that will be notified when a resource's lifecycle
+   * state changes.
+   */
   public onResourceLifecycleEvent(subscriber: IResourceLifecycleSubscriber) {
     this._resourceLifecyleSubscribers.push(subscriber);
   }
