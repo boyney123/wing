@@ -95,8 +95,12 @@ const Wrapper: FunctionComponent<PropsWithChildren<WrapperProps>> = memo(
               "cursor-pointer",
             )}
           >
+            <div className="-ml-0.5">
+              <RunningStateIndicator runningState={runningState} />
+            </div>
+
             <ResourceIcon
-              className="size-4 -ml-0.5"
+              className="size-4"
               resourceType={fqn}
               icon={icon}
               color={color}
@@ -137,9 +141,9 @@ const Wrapper: FunctionComponent<PropsWithChildren<WrapperProps>> = memo(
               </div>
             </div>
           </div>
-          <div className="flex absolute h-2 w-2 top-0 right-0 -mt-1 -mr-1">
+          {/* <div className="flex absolute h-2 w-2 top-0 right-0 -mt-1 -mr-1">
             <RunningStateIndicator runningState={runningState} />
-          </div>
+          </div> */}
         </div>
         {!collapsed && children}
       </div>
@@ -165,11 +169,12 @@ const RunningStateIndicator: FunctionComponent<RunningStateIndicatorProps> = ({
       </div>
     );
   }
-  // if (runningState === "started") {
+  return <div className="size-2 rounded-full bg-green-500"></div>;
+  //   if (runningState === "started") {
   //   return <div className="size-2 rounded-full bg-green-500"></div>;
   // }
   // return <div className="size-2 rounded-full bg-gray-400"></div>;
-  // return <div className="size-2 rounded-full"></div>;
+  // // return <div className="size-2 rounded-full"></div>;
 };
 
 interface ContainerNodeProps {
@@ -264,6 +269,8 @@ const ConstructNode: FunctionComponent<PropsWithChildren<ConstructNodeProps>> =
         [onSelectedNodeIdChange, id],
       );
 
+      const hasError = runningState === "error";
+
       const renderedNode = (
         <Node
           elk={{
@@ -290,9 +297,15 @@ const ConstructNode: FunctionComponent<PropsWithChildren<ConstructNodeProps>> =
                 "bg-white dark:bg-slate-700",
                 highlight && "bg-sky-50 dark:bg-sky-900",
                 "border",
-                "outline outline-0 outline-sky-200/50 dark:outline-sky-500/50",
-                !highlight && "border-slate-200 dark:border-slate-800",
-                highlight && "outline-4 border-sky-400 dark:border-sky-500",
+                "outline outline-0",
+                !highlight &&
+                  !hasError &&
+                  "border-slate-200 dark:border-slate-800",
+                highlight && !hasError && "border-sky-400 dark:border-sky-500",
+                highlight && "outline-4",
+                !hasError && "outline-sky-200/50 dark:outline-sky-500/50",
+                hasError &&
+                  "border-red-500 dark:border-red-800 outline-red-200/50 dark:outline-red-500/50",
                 "shadow",
                 "transition-all",
               ],
@@ -332,8 +345,12 @@ const ConstructNode: FunctionComponent<PropsWithChildren<ConstructNodeProps>> =
                       "border-b border-slate-200 dark:border-slate-800",
                   )}
                 >
+                  <div className="-ml-0.5">
+                    <RunningStateIndicator runningState={runningState} />
+                  </div>
+
                   <ResourceIcon
-                    className="size-4 -ml-0.5"
+                    className="size-4"
                     resourceType={fqn}
                     color={color}
                     icon={icon}
@@ -342,8 +359,13 @@ const ConstructNode: FunctionComponent<PropsWithChildren<ConstructNodeProps>> =
                   <span
                     className={clsx(
                       "text-xs font-medium leading-relaxed tracking-wide whitespace-nowrap",
-                      !highlight && " text-slate-600 dark:text-slate-300",
-                      highlight && "text-sky-600 dark:text-sky-300",
+                      !highlight &&
+                        !hasError &&
+                        "text-slate-600 dark:text-slate-300",
+                      hasError && "text-red-600 dark:text-red-600",
+                      highlight &&
+                        !hasError &&
+                        "text-sky-600 dark:text-sky-300",
                     )}
                   >
                     {name}
@@ -366,9 +388,9 @@ const ConstructNode: FunctionComponent<PropsWithChildren<ConstructNodeProps>> =
                     </div>
                   )}
                 </div>
-                <div className="flex absolute h-2 w-2 top-0 right-0 -mt-1 -mr-1">
+                {/* <div className="flex absolute h-2 w-2 top-0 right-0 -mt-1 -mr-1">
                   <RunningStateIndicator runningState={runningState} />
-                </div>
+                </div> */}
               </div>
             )}
 
