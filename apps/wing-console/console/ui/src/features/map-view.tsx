@@ -49,6 +49,7 @@ interface WrapperProps {
   icon?: string;
   collapsed?: boolean;
   onCollapse?: (value: boolean) => void;
+  runningState?: ResourceRunningState | undefined;
 }
 
 const Wrapper: FunctionComponent<PropsWithChildren<WrapperProps>> = memo(
@@ -62,6 +63,7 @@ const Wrapper: FunctionComponent<PropsWithChildren<WrapperProps>> = memo(
     children,
     color,
     icon,
+    runningState,
   }) => {
     /* eslint-disable jsx-a11y/no-static-element-interactions */
     /* eslint-disable jsx-a11y/click-events-have-key-events */
@@ -85,53 +87,58 @@ const Wrapper: FunctionComponent<PropsWithChildren<WrapperProps>> = memo(
           onClick?.();
         }}
       >
-        <div
-          className={clsx(
-            "px-2.5 py-1 flex items-center gap-1.5",
-            "border-b border-slate-200 dark:border-slate-800",
-            "cursor-pointer",
-          )}
-        >
-          <ResourceIcon
-            className="size-4 -ml-0.5"
-            resourceType={fqn}
-            icon={icon}
-            color={color}
-          />
-
-          <span
+        <div className="relative">
+          <div
             className={clsx(
-              "text-xs font-medium leading-relaxed tracking-wide whitespace-nowrap",
-              !highlight && " text-slate-600 dark:text-slate-300",
-              highlight && "text-sky-600 dark:text-sky-300",
+              "px-2.5 py-1 flex items-center gap-1.5",
+              "border-b border-slate-200 dark:border-slate-800",
+              "cursor-pointer",
             )}
           >
-            {name}
-          </span>
-          <div className="flex grow justify-end">
-            <div
-              className="pl-1"
-              onClick={() => {
-                onCollapse(!collapsed);
-              }}
+            <ResourceIcon
+              className="size-4 -ml-0.5"
+              resourceType={fqn}
+              icon={icon}
+              color={color}
+            />
+
+            <span
+              className={clsx(
+                "text-xs font-medium leading-relaxed tracking-wide whitespace-nowrap",
+                !highlight && " text-slate-600 dark:text-slate-300",
+                highlight && "text-sky-600 dark:text-sky-300",
+              )}
             >
-              {collapsed && (
-                <ChevronRightIcon
-                  className={clsx(
-                    "size-4",
-                    "hover:text-sky-600 dark:hover:text-sky-300 transition-colors",
-                  )}
-                />
-              )}
-              {!collapsed && (
-                <ChevronDownIcon
-                  className={clsx(
-                    "size-4",
-                    "hover:text-sky-600 dark:hover:text-sky-300 transition-colors",
-                  )}
-                />
-              )}
+              {name}
+            </span>
+            <div className="flex grow justify-end">
+              <div
+                className="pl-1"
+                onClick={() => {
+                  onCollapse(!collapsed);
+                }}
+              >
+                {collapsed && (
+                  <ChevronRightIcon
+                    className={clsx(
+                      "size-4",
+                      "hover:text-sky-600 dark:hover:text-sky-300 transition-colors",
+                    )}
+                  />
+                )}
+                {!collapsed && (
+                  <ChevronDownIcon
+                    className={clsx(
+                      "size-4",
+                      "hover:text-sky-600 dark:hover:text-sky-300 transition-colors",
+                    )}
+                  />
+                )}
+              </div>
             </div>
+          </div>
+          <div className="flex absolute h-2 w-2 top-0 right-0 -mt-1 -mr-1">
+            <RunningStateIndicator runningState={runningState} />
           </div>
         </div>
         {!collapsed && children}
@@ -158,11 +165,11 @@ const RunningStateIndicator: FunctionComponent<RunningStateIndicatorProps> = ({
       </div>
     );
   }
-  if (runningState === "started") {
-    return <div className="size-2 rounded-full bg-green-500"></div>;
-  }
+  // if (runningState === "started") {
+  //   return <div className="size-2 rounded-full bg-green-500"></div>;
+  // }
   // return <div className="size-2 rounded-full bg-gray-400"></div>;
-  return <div className="size-2 rounded-full"></div>;
+  // return <div className="size-2 rounded-full"></div>;
 };
 
 interface ContainerNodeProps {
@@ -176,6 +183,7 @@ interface ContainerNodeProps {
   onCollapse?: (value: boolean) => void;
   color?: string;
   icon?: string;
+  runningState?: ResourceRunningState | undefined;
 }
 
 const ContainerNode: FunctionComponent<PropsWithChildren<ContainerNodeProps>> =
@@ -201,6 +209,7 @@ const ContainerNode: FunctionComponent<PropsWithChildren<ContainerNodeProps>> =
             collapsed={props.collapsed}
             color={props.color}
             icon={props.icon}
+            runningState={props.runningState}
           >
             <div className="p-4">
               <NodeChildren>
@@ -314,47 +323,52 @@ const ConstructNode: FunctionComponent<PropsWithChildren<ConstructNodeProps>> =
             />
 
             {!hasChildNodes && (
-              // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
-              <div
-                className={clsx(
-                  "px-2.5 py-1 flex items-center gap-1.5",
-                  inflights.length > 0 &&
-                    "border-b border-slate-200 dark:border-slate-800",
-                )}
-              >
-                <ResourceIcon
-                  className="size-4 -ml-0.5"
-                  resourceType={fqn}
-                  color={color}
-                  icon={icon}
-                />
-
-                <span
+              // eslint-disable-next-line react/jsx-no-comment-textnodes
+              <div className="relative">
+                <div
                   className={clsx(
-                    "text-xs font-medium leading-relaxed tracking-wide whitespace-nowrap",
-                    !highlight && " text-slate-600 dark:text-slate-300",
-                    highlight && "text-sky-600 dark:text-sky-300",
+                    "px-2.5 py-1 flex items-center gap-1.5",
+                    inflights.length > 0 &&
+                      "border-b border-slate-200 dark:border-slate-800",
                   )}
                 >
-                  {name}
-                </span>
-                {collapsed && (
-                  <div
-                    className="flex grow justify-end pl-1"
-                    onClick={() => {
-                      if (collapsed) {
-                        onCollapse(false);
-                      }
-                    }}
+                  <ResourceIcon
+                    className="size-4 -ml-0.5"
+                    resourceType={fqn}
+                    color={color}
+                    icon={icon}
+                  />
+
+                  <span
+                    className={clsx(
+                      "text-xs font-medium leading-relaxed tracking-wide whitespace-nowrap",
+                      !highlight && " text-slate-600 dark:text-slate-300",
+                      highlight && "text-sky-600 dark:text-sky-300",
+                    )}
                   >
-                    <ChevronRightIcon
-                      className={clsx(
-                        "size-4",
-                        "hover:text-sky-600 dark:hover:text-sky-300 transition-colors",
-                      )}
-                    />
-                  </div>
-                )}
+                    {name}
+                  </span>
+                  {collapsed && (
+                    <div
+                      className="flex grow justify-end pl-1"
+                      onClick={() => {
+                        if (collapsed) {
+                          onCollapse(false);
+                        }
+                      }}
+                    >
+                      <ChevronRightIcon
+                        className={clsx(
+                          "size-4",
+                          "hover:text-sky-600 dark:hover:text-sky-300 transition-colors",
+                        )}
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="flex absolute h-2 w-2 top-0 right-0 -mt-1 -mr-1">
+                  <RunningStateIndicator runningState={runningState} />
+                </div>
               </div>
             )}
 
@@ -425,6 +439,7 @@ const ConstructNode: FunctionComponent<PropsWithChildren<ConstructNodeProps>> =
             collapsed={collapsed}
             color={color}
             icon={icon}
+            runningState={runningState}
           >
             <NodeChildren>
               {inflights.length > 0 && renderedNode}
