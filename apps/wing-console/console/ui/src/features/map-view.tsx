@@ -43,7 +43,6 @@ const baseLayoutOptions: LayoutOptions = {
   "elk.algorithm": "org.eclipse.elk.layered",
   "elk.layered.spacing.baseValue": `${SPACING_BASE_VALUE}`, // See https://eclipse.dev/elk/reference/options/org-eclipse-elk-layered-spacing-baseValue.html.
 };
-
 interface WrapperProps {
   name: string;
   fqn: string;
@@ -51,12 +50,25 @@ interface WrapperProps {
   onClick?: () => void;
   color?: string;
   icon?: string;
+  collapsed?: boolean;
+  onCollapse?: (value: boolean) => void;
 }
 
 const Wrapper: FunctionComponent<PropsWithChildren<WrapperProps>> = memo(
-  ({ name, fqn, highlight, onClick, children, color, icon }) => {
+  ({
+    name,
+    fqn,
+    highlight,
+    onClick,
+    collapsed = false,
+    onCollapse = (value: boolean) => {},
+    children,
+    color,
+    icon,
+  }) => {
+    /* eslint-disable jsx-a11y/no-static-element-interactions */
+    /* eslint-disable jsx-a11y/click-events-have-key-events */
     return (
-      // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
       <div
         className={clsx(
           "w-full h-full",
@@ -79,8 +91,8 @@ const Wrapper: FunctionComponent<PropsWithChildren<WrapperProps>> = memo(
         <div
           className={clsx(
             "px-2.5 py-1 flex items-center gap-1.5",
-            // inflights.length > 0 &&
             "border-b border-slate-200 dark:border-slate-800",
+            "cursor-pointer",
           )}
         >
           <ResourceIcon
@@ -139,6 +151,8 @@ interface ContainerNodeProps {
   resourceType?: string;
   highlight?: boolean;
   onClick?: () => void;
+  collapsed?: boolean;
+  onCollapse?: (value: boolean) => void;
   color?: string;
   icon?: string;
 }
@@ -162,6 +176,8 @@ const ContainerNode: FunctionComponent<PropsWithChildren<ContainerNodeProps>> =
             fqn={props.resourceType!}
             highlight={props.highlight}
             onClick={props.onClick}
+            onCollapse={props.onCollapse}
+            collapsed={props.collapsed}
             color={props.color}
             icon={props.icon}
           >
@@ -273,6 +289,7 @@ const ConstructNode: FunctionComponent<PropsWithChildren<ConstructNodeProps>> =
             />
 
             {!hasChildNodes && (
+              // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
               <div
                 className={clsx(
                   "px-2.5 py-1 flex items-center gap-1.5",
@@ -296,14 +313,23 @@ const ConstructNode: FunctionComponent<PropsWithChildren<ConstructNodeProps>> =
                 >
                   {name}
                 </span>
-
-                {/* <span className="text-slate-600 dark:text-slate-300">
-                  {status}
-                </span> */}
-
-                <div className="grow"></div>
-
-                <RunningStateIndicator runningState={runningState} />
+                {collapsed && (
+                  <div
+                    className="flex grow justify-end pl-1"
+                    onClick={() => {
+                      if (collapsed) {
+                        onCollapse(false);
+                      }
+                    }}
+                  >
+                    <ChevronRightIcon
+                      className={clsx(
+                        "size-4",
+                        "hover:text-sky-600 dark:hover:text-sky-300 transition-colors",
+                      )}
+                    />
+                  </div>
+                )}
               </div>
             )}
 
@@ -370,6 +396,8 @@ const ConstructNode: FunctionComponent<PropsWithChildren<ConstructNodeProps>> =
             resourceType={fqn}
             highlight={highlight}
             onClick={select}
+            onCollapse={onCollapse}
+            collapsed={collapsed}
             color={color}
             icon={icon}
           >
@@ -577,6 +605,9 @@ export interface MapViewV2Props {
   onSelectedNodeIdChange: (id: string | undefined) => void;
   selectedEdgeId?: string;
   onSelectedEdgeIdChange?: (id: string | undefined) => void;
+  onExpand: (path: string) => void;
+  onCollapse: (path: string) => void;
+  expandedItems: string[];
 }
 
 export const MapView = memo(
@@ -585,8 +616,13 @@ export const MapView = memo(
     onSelectedNodeIdChange,
     selectedEdgeId,
     onSelectedEdgeIdChange,
+    onExpand,
+    onCollapse,
+    expandedItems,
   }: MapViewV2Props) => {
-    const { nodeInfo, isNodeHidden, rootNodes, edges } = useMap({});
+    const { nodeInfo, isNodeHidden, rootNodes, edges } = useMap({
+      expandedItems,
+    });
 
     const RenderEdge = useCallback<EdgeComponent>(
       (props) => {
@@ -664,7 +700,7 @@ export const MapView = memo(
           </ConstructNode>
         );
       },
-      [isNodeHidden, nodeInfo],
+      [isNodeHidden, nodeInfo, onCollapse, onExpand, expandedItems],
     );
 
     const { theme } = useTheme();

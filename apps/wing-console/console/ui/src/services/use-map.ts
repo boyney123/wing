@@ -108,9 +108,11 @@ const getNodeInflights = (
   }));
 };
 
-export interface UseMapOptions {}
+export interface UseMapOptions {
+  expandedItems: string[];
+}
 
-export const useMap = ({}: UseMapOptions = {}) => {
+export const useMap = ({ expandedItems }: UseMapOptions) => {
   const query = trpc["app.map"].useQuery();
   const { tree: rawTree, connections: rawConnections } = query.data ?? {};
 
@@ -170,7 +172,7 @@ export const useMap = ({}: UseMapOptions = {}) => {
       traverse(child!);
     }
     return hiddenMap;
-  }, [rawTree]);
+  }, [rawTree, expandedItems]);
 
   const isNodeHidden = useCallback(
     (path: string) => {
