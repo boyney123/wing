@@ -162,9 +162,16 @@ export const useMap = ({ expandedItems }: UseMapOptions) => {
     const hiddenMap = new Map<string, boolean>();
     const traverse = (node: MapItem, forceHidden?: boolean) => {
       const hidden = forceHidden || node.display?.hidden || false;
+
       hiddenMap.set(node.path, hidden);
-      for (const child of Object.values(node.children ?? {})) {
-        traverse(child, hidden);
+
+      const children = Object.values(node.children ?? {});
+      const canBeExpanded =
+        !!node.children && children.some((child) => !child.display?.hidden);
+      const collapsed = canBeExpanded && !expandedItems.includes(node.path);
+
+      for (const child of children) {
+        traverse(child, hidden || collapsed);
       }
     };
     const pseudoRoot = rawTree?.children?.["Default"];

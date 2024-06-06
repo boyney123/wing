@@ -1,10 +1,7 @@
-import { CubeTransparentIcon } from "@heroicons/react/20/solid";
-import { CubeIcon } from "@heroicons/react/24/outline";
-import { BoltIcon } from "@heroicons/react/24/solid";
+import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import {
   ResourceIcon,
   SpinnerLoader,
-  getResourceIconComponent,
   useTheme,
 } from "@wingconsole/design-system";
 import type { MapItem } from "@wingconsole/server";
@@ -12,7 +9,7 @@ import type { ResourceRunningState } from "@winglang/sdk/lib/simulator/index.js"
 import clsx from "classnames";
 import { type ElkPoint, type LayoutOptions } from "elkjs";
 import type { FunctionComponent, PropsWithChildren } from "react";
-import { memo, useCallback, useEffect, useId, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { useKeyPressEvent } from "react-use";
 
 import { useMap } from "../services/use-map.js";
@@ -111,9 +108,33 @@ const Wrapper: FunctionComponent<PropsWithChildren<WrapperProps>> = memo(
           >
             {name}
           </span>
+          <div className="flex grow justify-end">
+            <div
+              className="pl-1"
+              onClick={() => {
+                onCollapse(!collapsed);
+              }}
+            >
+              {collapsed && (
+                <ChevronRightIcon
+                  className={clsx(
+                    "size-4",
+                    "hover:text-sky-600 dark:hover:text-sky-300 transition-colors",
+                  )}
+                />
+              )}
+              {!collapsed && (
+                <ChevronDownIcon
+                  className={clsx(
+                    "size-4",
+                    "hover:text-sky-600 dark:hover:text-sky-300 transition-colors",
+                  )}
+                />
+              )}
+            </div>
+          </div>
         </div>
-
-        {children}
+        {!collapsed && children}
       </div>
     );
   },
@@ -206,6 +227,8 @@ interface ConstructNodeProps {
   hasChildNodes?: boolean;
   onSelectedNodeIdChange: (id: string | undefined) => void;
   color?: string;
+  onCollapse: (value: boolean) => void;
+  collapsed: boolean;
   icon?: string;
   runningState?: ResourceRunningState | undefined;
 }
@@ -222,6 +245,8 @@ const ConstructNode: FunctionComponent<PropsWithChildren<ConstructNodeProps>> =
       children,
       hasChildNodes,
       color,
+      onCollapse,
+      collapsed,
       icon,
       runningState,
     }) => {
@@ -653,40 +678,53 @@ export const MapView = memo(
       }>
     >(
       (props) => {
-        if (isNodeHidden(props.constructTreeNode.path)) {
+        const node = props.constructTreeNode;
+        if (isNodeHidden(node.path)) {
           return <></>;
         }
 
-        const info = nodeInfo?.get(props.constructTreeNode.path);
+        const info = nodeInfo?.get(node.path);
         if (!info) {
           return <></>;
         }
 
-        const childNodes = Object.values(
-          props.constructTreeNode.children ?? {},
-        ).filter((node) => !isNodeHidden(node.path));
+        const childNodes = Object.values(node.children ?? {}).filter(
+          (node) => !isNodeHidden(node.path),
+        );
 
-        const fqn = props.constructTreeNode.constructInfo?.fqn;
+        const fqn = node.constructInfo?.fqn;
 
         const cloudResourceType = fqn?.split(".").at(-1);
 
         const name =
-          props.constructTreeNode.display?.title === cloudResourceType
-            ? props.constructTreeNode.id
-            : props.constructTreeNode.display?.title ??
-              props.constructTreeNode.id;
+          node.display?.title === cloudResourceType
+            ? node.id
+            : node.display?.title ?? node.id;
+
+        const children = Object.values(node.children ?? {});
+        const canBeExpanded =
+          !!node.children && children.some((child) => !child.display?.hidden);
+        const collapsed = canBeExpanded && !expandedItems.includes(node.path);
 
         return (
           <ConstructNode
-            id={props.constructTreeNode.path}
+            id={node.path}
             name={name ?? ""}
             fqn={fqn ?? ""}
-            color={props.constructTreeNode.display?.color}
-            icon={props.constructTreeNode.display?.icon}
+            color={node.display?.color}
+            icon={node.display?.icon}
             inflights={info.type === "construct" ? info.inflights : []}
             onSelectedNodeIdChange={props.onSelectedNodeIdChange}
-            highlight={props.selectedNodeId === props.constructTreeNode.path}
+            highlight={props.selectedNodeId === node.path}
             hasChildNodes={childNodes.length > 0}
+            collapsed={collapsed}
+            onCollapse={(collapse) => {
+              if (collapse) {
+                onCollapse(node.path);
+              } else {
+                onExpand(node.path);
+              }
+            }}
             runningState={props.constructTreeNode.status}
           >
             {childNodes.map((child) => (
