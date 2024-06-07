@@ -245,6 +245,7 @@ export const createAppRouter = () => {
             type: getResourceType(node, simulator),
             props: config?.props,
             attributes: config?.attrs,
+            runningState: config?.attrs.runningState,
           },
           inbound: connections
             .filter(({ target }) => {
@@ -382,7 +383,7 @@ export const createAppRouter = () => {
         return {
           ...node,
           runningState: simulator.tryGetResourceConfig(node.path)?.attrs
-            ?.status,
+            ?.runningState,
           children,
         } as MapItem;
       };
@@ -502,7 +503,8 @@ function createExplorerItemFromConstructTreeNode(
     label,
     type: getResourceType(node, simulator),
     display: node.display,
-    runningState: simulator.tryGetResourceConfig(node.path)?.attrs?.status,
+    runningState: simulator.tryGetResourceConfig(node.path)?.attrs
+      ?.runningState,
     childItems: node.children
       ? Object.values(node.children)
           .filter((node) => {

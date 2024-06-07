@@ -17,7 +17,7 @@ import { PolicySchema } from "../target-sim/schema-resources";
 
 const LOCALHOST_ADDRESS = "127.0.0.1";
 const HANDLE_ATTRIBUTE = "handle";
-const RUNNING_STATE_ATTRIBUTE = "status";
+const RUNNING_STATE_ATTRIBUTE = "runningState";
 
 // export enum ConstructStatus {
 //   STARTING = "STARTING",
