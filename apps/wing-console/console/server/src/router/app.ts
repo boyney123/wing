@@ -34,10 +34,11 @@ export interface ExplorerItem {
   type?: string;
   childItems?: ExplorerItem[];
   display?: NodeDisplay;
+  runningState?: ResourceRunningState | undefined;
 }
 
 export interface MapItem extends ConstructTreeNode {
-  status?: ResourceRunningState | undefined;
+  runningState?: ResourceRunningState | undefined;
   children?: Record<string, MapItem>;
 }
 
@@ -380,7 +381,8 @@ export const createAppRouter = () => {
         }
         return {
           ...node,
-          status: simulator.tryGetResourceConfig(node.path)?.attrs?.status,
+          runningState: simulator.tryGetResourceConfig(node.path)?.attrs
+            ?.status,
           children,
         } as MapItem;
       };
@@ -500,6 +502,7 @@ function createExplorerItemFromConstructTreeNode(
     label,
     type: getResourceType(node, simulator),
     display: node.display,
+    runningState: simulator.tryGetResourceConfig(node.path)?.attrs?.status,
     childItems: node.children
       ? Object.values(node.children)
           .filter((node) => {

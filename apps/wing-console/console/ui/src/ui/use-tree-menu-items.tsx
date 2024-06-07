@@ -5,7 +5,7 @@ export interface TreeMenuItem {
   id: string;
   icon?: React.ReactNode;
   label: string;
-  secondaryLabel?: string | ReactNode | ((item: TreeMenuItem) => ReactNode);
+  secondaryLabel?: string | ReactNode | (() => JSX.Element);
   children?: TreeMenuItem[];
 }
 

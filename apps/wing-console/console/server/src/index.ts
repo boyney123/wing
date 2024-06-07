@@ -150,7 +150,10 @@ export const createConsoleServer = async ({
     simulator.on("trace", onTrace);
   }
   simulator.on("resourceLifecycleEvent", async (event) => {
-    await invalidateQuery("app.map");
+    await Promise.all([
+      invalidateQuery("app.map"),
+      invalidateQuery("app.explorerTree"),
+    ]);
   });
   compiler.on("compiled", ({ simfile }) => {
     if (!isStarting) {

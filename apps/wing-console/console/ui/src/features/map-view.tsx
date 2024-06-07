@@ -95,12 +95,12 @@ const Wrapper: FunctionComponent<PropsWithChildren<WrapperProps>> = memo(
               "cursor-pointer",
             )}
           >
-            <div className="-ml-0.5">
+            {/* <div className="-ml-0.5">
               <RunningStateIndicator runningState={runningState} />
-            </div>
+            </div> */}
 
             <ResourceIcon
-              className="size-4"
+              className="size-4 -ml-0.5"
               resourceType={fqn}
               icon={icon}
               color={color}
@@ -115,6 +115,7 @@ const Wrapper: FunctionComponent<PropsWithChildren<WrapperProps>> = memo(
             >
               {name}
             </span>
+            <RunningStateIndicator runningState={runningState} />
             <div className="flex grow justify-end">
               <div
                 className="pl-1"
@@ -169,7 +170,8 @@ const RunningStateIndicator: FunctionComponent<RunningStateIndicatorProps> = ({
       </div>
     );
   }
-  return <div className="size-2 rounded-full bg-green-500"></div>;
+  return <div className="size-2"></div>;
+  // return <div className="size-2 rounded-full bg-green-500"></div>;
   //   if (runningState === "started") {
   //   return <div className="size-2 rounded-full bg-green-500"></div>;
   // }
@@ -345,12 +347,12 @@ const ConstructNode: FunctionComponent<PropsWithChildren<ConstructNodeProps>> =
                       "border-b border-slate-200 dark:border-slate-800",
                   )}
                 >
-                  <div className="-ml-0.5">
+                  {/* <div className="-ml-0.5">
                     <RunningStateIndicator runningState={runningState} />
-                  </div>
+                  </div> */}
 
                   <ResourceIcon
-                    className="size-4"
+                    className="size-4 -ml-0.5"
                     resourceType={fqn}
                     color={color}
                     icon={icon}
@@ -370,6 +372,9 @@ const ConstructNode: FunctionComponent<PropsWithChildren<ConstructNodeProps>> =
                   >
                     {name}
                   </span>
+
+                  <RunningStateIndicator runningState={runningState} />
+
                   {collapsed && (
                     <div
                       className="flex grow justify-end pl-1"
@@ -762,7 +767,7 @@ export const MapView = memo(
                 onExpand(node.path);
               }
             }}
-            runningState={props.constructTreeNode.status}
+            runningState={props.constructTreeNode.runningState}
           >
             {childNodes.map((child) => (
               <RenderNode
