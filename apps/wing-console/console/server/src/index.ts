@@ -153,6 +153,7 @@ export const createConsoleServer = async ({
     await Promise.all([
       invalidateQuery("app.map"),
       invalidateQuery("app.explorerTree"),
+      invalidateQuery("app.nodeMetadata"),
     ]);
   });
   compiler.on("compiled", ({ simfile }) => {

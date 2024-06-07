@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { observable } from "@trpc/server/observable";
+import type { UIComponent } from "@winglang/sdk/lib/core/tree.js";
 import type { ResourceRunningState } from "@winglang/sdk/lib/simulator/simulator.js";
 import uniqby from "lodash.uniqby";
 import { z } from "zod";
@@ -245,7 +246,7 @@ export const createAppRouter = () => {
             type: getResourceType(node, simulator),
             props: config?.props,
             attributes: config?.attrs,
-            runningState: config?.attrs.runningState,
+            runningState: config?.attrs?.runningState,
           },
           inbound: connections
             .filter(({ target }) => {
@@ -435,11 +436,7 @@ export const createAppRouter = () => {
       .query(async ({ input, ctx }) => {
         const simulator = await ctx.simulator();
         const ui = simulator.getResourceUI(input.resourcePath);
-        return ui as Array<{
-          kind: string;
-          label: string;
-          handler: string | Record<string, string>;
-        }>;
+        return ui as Array<UIComponent>;
       }),
 
     "app.analytics": createProcedure.query(async ({ ctx }) => {
