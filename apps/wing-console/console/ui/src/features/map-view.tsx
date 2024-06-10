@@ -50,6 +50,7 @@ interface WrapperProps {
   collapsed?: boolean;
   onCollapse?: (value: boolean) => void;
   runningState?: ResourceRunningState | undefined;
+  hierarchichalError: boolean;
 }
 
 const Wrapper: FunctionComponent<PropsWithChildren<WrapperProps>> = memo(
@@ -64,6 +65,7 @@ const Wrapper: FunctionComponent<PropsWithChildren<WrapperProps>> = memo(
     color,
     icon,
     runningState,
+    hierarchichalError,
   }) => {
     /* eslint-disable jsx-a11y/no-static-element-interactions */
     /* eslint-disable jsx-a11y/click-events-have-key-events */
@@ -115,7 +117,9 @@ const Wrapper: FunctionComponent<PropsWithChildren<WrapperProps>> = memo(
             >
               {name}
             </span>
-            <RunningStateIndicator runningState={runningState} />
+            <RunningStateIndicator
+              runningState={hierarchichalError ? "error" : runningState}
+            />
             <div className="flex grow justify-end">
               <div
                 className="pl-1"
@@ -191,6 +195,7 @@ interface ContainerNodeProps {
   color?: string;
   icon?: string;
   runningState?: ResourceRunningState | undefined;
+  hierarchichalError: boolean;
 }
 
 const ContainerNode: FunctionComponent<PropsWithChildren<ContainerNodeProps>> =
@@ -217,6 +222,7 @@ const ContainerNode: FunctionComponent<PropsWithChildren<ContainerNodeProps>> =
             color={props.color}
             icon={props.icon}
             runningState={props.runningState}
+            hierarchichalError={props.hierarchichalError}
           >
             <div className="p-4">
               <NodeChildren>
@@ -247,6 +253,7 @@ interface ConstructNodeProps {
   collapsed: boolean;
   icon?: string;
   runningState?: ResourceRunningState | undefined;
+  hierarchichalError: boolean;
 }
 
 const ConstructNode: FunctionComponent<PropsWithChildren<ConstructNodeProps>> =
@@ -265,6 +272,7 @@ const ConstructNode: FunctionComponent<PropsWithChildren<ConstructNodeProps>> =
       collapsed,
       icon,
       runningState,
+      hierarchichalError,
     }) => {
       const select = useCallback(
         () => onSelectedNodeIdChange(id),
@@ -373,7 +381,9 @@ const ConstructNode: FunctionComponent<PropsWithChildren<ConstructNodeProps>> =
                     {name}
                   </span>
 
-                  <RunningStateIndicator runningState={runningState} />
+                  <RunningStateIndicator
+                    runningState={hierarchichalError ? "error" : runningState}
+                  />
 
                   {collapsed && (
                     <div
@@ -467,6 +477,7 @@ const ConstructNode: FunctionComponent<PropsWithChildren<ConstructNodeProps>> =
             color={color}
             icon={icon}
             runningState={runningState}
+            hierarchichalError={hierarchichalError}
           >
             <NodeChildren>
               {inflights.length > 0 && renderedNode}
@@ -768,6 +779,7 @@ export const MapView = memo(
               }
             }}
             runningState={props.constructTreeNode.runningState}
+            hierarchichalError={props.constructTreeNode.hierarchichalError}
           >
             {childNodes.map((child) => (
               <RenderNode

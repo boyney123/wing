@@ -90,6 +90,7 @@ export interface MetadataNode {
       }
     | undefined;
   runningState?: ResourceRunningState | undefined;
+  hierarchichalError?: boolean;
 }
 
 export interface MetadataProps {
@@ -297,7 +298,11 @@ export const ResourceMetadata = memo(
           <div className="grow"></div>
 
           <div>
-            <RunningStateIndicator runningState={node.runningState} />
+            <RunningStateIndicator
+              runningState={
+                node.hierarchichalError ? "error" : node.runningState
+              }
+            />
           </div>
         </div>
 

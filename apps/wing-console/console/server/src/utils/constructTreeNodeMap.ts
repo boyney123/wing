@@ -1,3 +1,5 @@
+import type { BaseResourceSchema, Simulator } from "../wingsdk.js";
+
 import type { ConstructInfo, ConstructTreeNode } from "./construct-tree.js";
 
 export interface NodeDisplay {
@@ -23,6 +25,7 @@ export interface Node {
   attributes: Record<string, any> | undefined;
   children: string[];
   display?: NodeDisplay;
+  resourceConfig?: BaseResourceSchema;
 }
 
 export interface ConstructTreeNodeRecord {
@@ -74,7 +77,10 @@ function buildNodeMapFromRecord(
   };
 }
 
-export function buildConstructTreeNodeMap(node: ConstructTreeNode) {
+export function buildConstructTreeNodeMap(
+  node: ConstructTreeNode,
+  simulator: Simulator,
+) {
   let nodeRecord: ConstructTreeNodeRecord = {};
 
   visitChildren(undefined, node, (parent, node) => {
@@ -88,6 +94,7 @@ export function buildConstructTreeNodeMap(node: ConstructTreeNode) {
       attributes: node.attributes,
       constructInfo: node.constructInfo,
       display: node.display,
+      resourceConfig: simulator.tryGetResourceConfig(node.path),
     };
 
     if (!parent) {
